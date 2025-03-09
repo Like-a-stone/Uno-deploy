@@ -1,0 +1,44 @@
+{
+  "name": "uno-game",
+  "description": "",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node --watch src/app.js",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/victorfurtyy/programming-iv-uno.git"
+  },
+  "bugs": {
+    "url": "https://gitlab.com/victorfurtyy/programming-iv-uno/issues"
+  },
+  "homepage": "https://gitlab.com/victorfurtyy/programming-iv-uno#readme",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.19.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.6.0",
+    "pg-hstore": "^2.3.3",
+    "sequelize": "^6.6.5",
+    "socket.io": "^4.8.1",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.8",
+    "@babel/plugin-transform-modules-commonjs": "^7.26.3",
+    "@babel/preset-env": "^7.26.8",
+    "babel-jest": "^27.5.1",
+    "jest": "^27.5.1",
+    "supertest": "^6.1.3"
+  }
+}

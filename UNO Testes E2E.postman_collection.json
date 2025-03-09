@@ -1,0 +1,4123 @@
+{
+	"info": {
+		"_postman_id": "1c1d7422-c4a7-4e67-9cc5-0257201df97f",
+		"name": "UNO Testes E2E",
+		"description": "### UNO Testes E2E\n\n**Objetivo Geral**:  \nEsta coleção de testes end-to-end (E2E) foi projetada para validar o fluxo completo do jogo UNO, desde o gerenciamento de usuários até a finalização do jogo e visualização de pontuações. Os testes cobrem cenários críticos, como criação de jogadores, login, criação e início de jogos, jogadas de cartas, declaração de \"Uno\", desafios, e finalização do jogo, garantindo que o sistema funcione corretamente em diferentes situações.\n\n**Estrutura dos Testes**:  \nA coleção está organizada em subpastas, cada uma focada em um cenário específico de teste. Cada subpasta contém uma sequência de requisições que simulam ações reais dos usuários, permitindo a validação de funcionalidades distintas do sistema. As subpastas incluem:\n\n- **Gerenciamento de Usuário**: Testa a criação de jogadores, login, visualização de perfil e reset do banco de dados.\n    \n- **Criar e Iniciar Jogo**: Verifica a criação de um jogo, marcação de jogadores como prontos e início do jogo.\n    \n- **Falar Uno Quando Tiver 1 Carta**: Valida se um jogador pode declarar \"Uno\" corretamente ao ficar com apenas uma carta.\n    \n- **Desafiar Jogador que Tem Apenas 1 Carta**: Testa o desafio a um jogador que não declarou \"Uno\" ao ficar com uma carta.\n    \n- **Play Card**: Verifica a jogada de cartas durante o jogo, incluindo validação de cores e valores.\n    \n- **Finalizar Jogo Havendo 0 Cartas**: Confirma se o jogo pode ser finalizado corretamente quando um jogador fica sem cartas.\n    \n- **Visualizar Scores**: Testa a visualização das pontuações dos jogadores após o jogo.\n    \n\n**Como Executar**:\n\n- Execute as subpastas em ordem para executar cada cenário, ou execute a pasta inteira para que todos os cenários sejam executados.\n    \n- Após cada teste, o banco de dados é resetado para assegurar a independência dos cenários.\n    \n\n**Reset do Banco de Dados para Testes**\n\nO sistema implementa um endpoint seguro para resetar o banco de dados, facilitando testes de API. Este recurso é protegido por autenticação via token administrativo e utiliza o Sequelize para recriar todas as tabelas.\n\nO endpoint `/api/resetDB` foi criado usando Express Router e requer um token administrativo para autorização. Quando acionado, o método `sequelize.sync({ force: true })` é executado, Entendi que você precisa de uma documentação em parágrafos pequenos sobre como o reset do banco de dados foi implementado, para facilitar os testes de requisição no Postman. Vou criar essa documentação para você:\n\nO sistema implementa um endpoint seguro para resetar o banco de dados, útil durante testes e desenvolvimento. Esta funcionalidade é protegida por um token de administrador e utiliza o Sequelize para recriar todas as tabelas.\n\nO endpoint é protegido por um middleware de autenticação que verifica a presença de um token de administrador válido. O token deve ser enviado no cabeçalho da requisição como `admin-token`.\n\n**Endpoint**\n\n- **URL**: `/api/resetDB`\n    \n- **Método**: POST\n    \n- **Autenticação**: Requer token de administrador\n    \n\n**Token de Administrador**\n\nO token é definido através da variável de ambiente `ADMIN_RESET_TOKEN`. Caso esta variável não esteja configurada, um token padrão é utilizado como fallback, embora isso não seja recomendado em ambiente de produção.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38182919"
+	},
+	"item": [
+		{
+			"name": "Gerenciamento de Usuário",
+			"item": [
+				{
+					"name": "1. Criar Jogador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Usuário registrado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Jane Doe\",\r\n  \"email\": \"jane.doe@example.com\",\r\n  \"age\": 30,\r\n  \"password\": \"anotherstrongpassword1\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Fazer Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken\", response.accessToken);",
+									"",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Login bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"jane.doe@example.com\",\n    \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Player Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Perfil visualizado com sucesso\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.name).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.email).to.equal(\"jane.doe@example.com\");",
+									"    pm.expect(response.age).to.eql(30);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{playerToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/profile/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"profile",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Reset Data Base",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "admin-token",
+								"value": "Xn9LZIzHJWU3ZN1YUhx+ATVrVpUXDEDjng7/8WdmKGFax4OdSUQQI4YIwc3fCQkR",
+								"description": "Reset Database",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/resetDB/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"resetDB",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "**Objetivo**: Verificar o fluxo completo de gerenciamento de usuários, incluindo criação, login, visualização de perfil e reset do banco de dados.\n\n**Detalhes**:\n\n- Criar um novo jogador e confirmar o registro.\n    \n- Realizar login com as credenciais criadas e armazenar o token de acesso.\n    \n- Visualizar o perfil do jogador autenticado.\n    \n- Resetar o banco de dados para limpar os dados de teste.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"pm.test(\"Verificação do fluxo de Gerenciamento de Usuário\", function () {",
+							"    const response = pm.response.json();",
+							"    if (pm.info.requestName === \"1. Criar Jogador\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"2. Fazer Login\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken\")).to.exist;",
+							"    } else if (pm.info.requestName === \"3. Visualizar Perfil\") {",
+							"        pm.expect(response.name).to.equal(\"Jane Doe\");",
+							"        pm.expect(response.email).to.equal(\"jane.doe@example.com\");",
+							"        pm.expect(response.age).to.eql(30);",
+							"    } else if (pm.info.requestName === \"4. Reset Data Base\") {",
+							"        pm.expect(response.message).to.equal(\"Database reset successfully\");",
+							"    }",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Criar e Iniciar Jogo",
+			"item": [
+				{
+					"name": "1. Criar Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 1 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player1Email\", \"jane.doe@example.com\");",
+									"    console.log(\"player1Email set to: jane.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"age\": 30,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Criar Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 2 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player2Email\", \"john.doe@example.com\");",
+									"    console.log(\"player2Email set to: john.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"age\": 25,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Login Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken1\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 1 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player1Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken2\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 2 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player2Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Criar Jogo (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"gameId\", response.game_id);",
+									"pm.test(\"Status code é 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Jogo criado com sucesso\", function () {",
+									"    pm.expect(response.message).to.equal(\"Game created successfully\");",
+									"    pm.expect(response.game_id).to.exist;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Uno Teste 1 Carta\",\n  \"access_token\": \"{{playerToken1}}\",\n  \"maxPlayers\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Jogador 1 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 1 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Jogador 2 Entra no Jogo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 entrou no jogo\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/join",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Jogador 2 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Iniciar Jogo (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogo iniciado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Game started successfully\");",
+									"    pm.expect(response.firstPlayer).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.players).to.be.an(\"array\").that.has.lengthOf(2);",
+									"    pm.expect(response.players[0].player).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.players[0].cardCount).to.equal(1);",
+									"    pm.expect(response.players[1].player).to.equal(\"John Doe\");",
+									"    pm.expect(response.players[1].cardCount).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"cardsPerPlayer\": 1,\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/start",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. Reset Data Base",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "admin-token",
+								"value": "Xn9LZIzHJWU3ZN1YUhx+ATVrVpUXDEDjng7/8WdmKGFax4OdSUQQI4YIwc3fCQkR",
+								"description": "Reset Database",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/resetDB/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"resetDB",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "**Objetivo**: Testar a criação de um jogo, marcação de jogador como pronto e início do jogo.\n\n**Detalhes**:\n\n- Criar um jogador e fazer login.\n    \n- Criar um novo jogo e armazenar o ID do jogo.\n    \n- Marcar o jogador como pronto para o jogo.\n    \n- Iniciar o jogo com um número específico de cartas por jogador.\n    \n- Resetar o banco de dados após o teste.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"pm.test(\"Verificação do estado do fluxo\", function () {",
+							"    const response = pm.response.json();",
+							"    if (pm.info.requestName === \"1. Criar Jogador\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    }",
+							"    else if (pm.info.requestName === \"2. Fazer Login\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken\")).to.exist;",
+							"    }",
+							"    else if (pm.info.requestName === \"3. Criar Jogo\") {",
+							"        pm.expect(response.message).to.equal(\"Game created successfully\");",
+							"        pm.expect(pm.environment.get(\"gameId\")).to.exist;",
+							"    }",
+							"    else if (pm.info.requestName === \"4. Marcar Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    }",
+							"    else if (pm.info.requestName === \"5. Iniciar Jogo\") {",
+							"        pm.expect(response.message).to.equal(\"Game started successfully\");",
+							"    } else if (pm.info.requestName === \"6. Reset Data Base\") {",
+							"        pm.expect(response.message).to.equal(\"Database reset successfully\");",
+							"    }",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Falar Uno Quando Tiver 1 carta",
+			"item": [
+				{
+					"name": "1. Criar Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 1 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player1Email\", \"jane.doe@example.com\");",
+									"    console.log(\"player1Email set to: jane.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"age\": 30,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Criar Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 2 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player2Email\", \"john.doe@example.com\");",
+									"    console.log(\"player2Email set to: john.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"age\": 25,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Login Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken1\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 1 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player1Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken2\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 2 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player2Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Criar Jogo (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"gameId\", response.game_id);",
+									"pm.test(\"Status code é 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Jogo criado com sucesso\", function () {",
+									"    pm.expect(response.message).to.equal(\"Game created successfully\");",
+									"    pm.expect(response.game_id).to.exist;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Uno Teste 1 Carta\",\n  \"access_token\": \"{{playerToken1}}\",\n  \"maxPlayers\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Jogador 1 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 1 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Jogador 2 Entra no Jogo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 entrou no jogo\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/join",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Jogador 2 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Iniciar Jogo (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogo iniciado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Game started successfully\");",
+									"    pm.expect(response.firstPlayer).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.players).to.be.an(\"array\").that.has.lengthOf(2);",
+									"    pm.expect(response.players[0].player).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.players[0].cardCount).to.equal(1);",
+									"    pm.expect(response.players[1].player).to.equal(\"John Doe\");",
+									"    pm.expect(response.players[1].cardCount).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"cardsPerPlayer\": 1,\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/start",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. Dizer Uno (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Uno declarado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Jane Doe said UNO successfully.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/say-uno",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"say-uno"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. Reset Data Base",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "admin-token",
+								"value": "Xn9LZIzHJWU3ZN1YUhx+ATVrVpUXDEDjng7/8WdmKGFax4OdSUQQI4YIwc3fCQkR",
+								"description": "Reset Database",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/resetDB/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"resetDB",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "**Objetivo**: Verificar se um jogador pode declarar \"Uno\" corretamente quando possui apenas uma carta.\n\n**Detalhes**:\n\n- Criar dois jogadores e fazer login.\n    \n- Criar um jogo e marcar ambos os jogadores como prontos.\n    \n- Iniciar o jogo com uma carta por jogador.\n    \n- Declarar \"Uno\" para o jogador com uma carta.\n    \n- Resetar o banco de dados.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"pm.test(\"Verificação do fluxo de Falar Uno\", function () {",
+							"    const response = pm.response.json();",
+							"    if (pm.info.requestName === \"1. Criar Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"2. Criar Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"3. Login Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken1\")).to.exist;",
+							"    } else if (pm.info.requestName === \"4. Login Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken2\")).to.exist;",
+							"    } else if (pm.info.requestName === \"5. Criar Jogo (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game created successfully\");",
+							"        pm.expect(pm.environment.get(\"gameId\")).to.exist;",
+							"    } else if (pm.info.requestName === \"6. Jogador 1 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"7. Jogador 2 Entra no Jogo\") {",
+							"        pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+							"    } else if (pm.info.requestName === \"8. Jogador 2 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"9. Iniciar Jogo (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game started successfully\");",
+							"    } else if (pm.info.requestName === \"10. Dizer Uno (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Jane Doe said UNO successfully.\");",
+							"    } else if (pm.info.requestName === \"11. Reset Data Base\") {",
+							"        pm.expect(response.message).to.equal(\"Database reset successfully\");",
+							"    }",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Desafiar jogador que tem apenas 1 carta",
+			"item": [
+				{
+					"name": "1. Criar Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 1 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player1Email\", \"jane.doe@example.com\");",
+									"    console.log(\"player1Email set to: jane.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"age\": 30,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Criar Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 2 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player2Email\", \"john.doe@example.com\");",
+									"    console.log(\"player2Email set to: john.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"age\": 25,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Login Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken1\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 1 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player1Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken2\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 2 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player2Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Criar Jogo (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"gameId\", response.game_id);",
+									"pm.test(\"Status code é 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Jogo criado com sucesso\", function () {",
+									"    pm.expect(response.message).to.equal(\"Game created successfully\");",
+									"    pm.expect(response.game_id).to.exist;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Uno Teste 1 Carta\",\n  \"access_token\": \"{{playerToken1}}\",\n  \"maxPlayers\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Jogador 1 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 1 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Jogador 2 Entra no Jogo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 entrou no jogo\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/join",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Jogador 2 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Iniciar Jogo (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogo iniciado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Game started successfully\");",
+									"    pm.expect(response.firstPlayer).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.players).to.be.an(\"array\").that.has.lengthOf(2);",
+									"    pm.expect(response.players[0].player).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.players[0].cardCount).to.equal(1);",
+									"    pm.expect(response.players[1].player).to.equal(\"John Doe\");",
+									"    pm.expect(response.players[1].cardCount).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"cardsPerPlayer\": 1,\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/start",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. Desafiar Jogador 2 (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Desafio realizado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Challenge successful. John Doe forgot to say UNO and draws 2 cards.\");",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/challenge-uno",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"challenge-uno"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. Reset Data Base",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "admin-token",
+								"value": "Xn9LZIzHJWU3ZN1YUhx+ATVrVpUXDEDjng7/8WdmKGFax4OdSUQQI4YIwc3fCQkR",
+								"description": "Reset Database",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/resetDB/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"resetDB",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "**Objetivo**: Testar o desafio a um jogador que possui apenas uma carta e não declarou \"Uno\".\n\n**Detalhes**:\n\n- Criar dois jogadores e fazer login.\n    \n- Criar um jogo e marcar ambos como prontos.\n    \n- Iniciar o jogo com uma carta por jogador.\n    \n- Jogador 1 joga uma carta, deixando-o com zero cartas.\n    \n- Jogador 2 desafia o Jogador 1 por não ter declarado \"Uno\".\n    \n- Verificar se o Jogador 1 recebe cartas de penalidade.\n    \n- Resetar o banco de dados.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"pm.test(\"Verificação do fluxo de Desafiar jogador\", function () {",
+							"    const response = pm.response.json();",
+							"    if (pm.info.requestName === \"1. Criar Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"2. Criar Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"3. Login Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken1\")).to.exist;",
+							"    } else if (pm.info.requestName === \"4. Login Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken2\")).to.exist;",
+							"    } else if (pm.info.requestName === \"5. Criar Jogo (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game created successfully\");",
+							"        pm.expect(pm.environment.get(\"gameId\")).to.exist;",
+							"    } else if (pm.info.requestName === \"6. Jogador 1 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"7. Jogador 2 Entra no Jogo\") {",
+							"        pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+							"    } else if (pm.info.requestName === \"8. Jogador 2 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"9. Iniciar Jogo (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game started successfully\");",
+							"    } else if (pm.info.requestName === \"10. Desafiar Jogador 2 (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Challenge successful. John Doe forgot to say UNO and draws 2 cards.\");",
+							"    } else if (pm.info.requestName === \"11. Reset Data Base\") {",
+							"        pm.expect(response.message).to.equal(\"Database reset successfully\");",
+							"    }",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Finalizar Jogo Havendo 0 cartas",
+			"item": [
+				{
+					"name": "Reset Data Base",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "admin-token",
+								"value": "Xn9LZIzHJWU3ZN1YUhx+ATVrVpUXDEDjng7/8WdmKGFax4OdSUQQI4YIwc3fCQkR",
+								"description": "Reset Database",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/resetDB/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"resetDB",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Data Base",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "admin-token",
+								"value": "Xn9LZIzHJWU3ZN1YUhx+ATVrVpUXDEDjng7/8WdmKGFax4OdSUQQI4YIwc3fCQkR",
+								"description": "Reset Database",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/resetDB/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"resetDB",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "1. Criar Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 1 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player1Email\", \"jane.doe@example.com\");",
+									"    console.log(\"player1Email set to: jane.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"age\": 30,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Criar Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 2 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player2Email\", \"john.doe@example.com\");",
+									"    console.log(\"player2Email set to: john.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"age\": 25,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Login Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken1\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 1 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player1Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken2\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 2 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player2Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Criar Jogo (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"gameId\", response.game_id);",
+									"pm.test(\"Status code é 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Jogo criado com sucesso\", function () {",
+									"    pm.expect(response.message).to.equal(\"Game created successfully\");",
+									"    pm.expect(response.game_id).to.exist;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Uno Teste 1 Carta\",\n  \"access_token\": \"{{playerToken1}}\",\n  \"maxPlayers\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Jogador 1 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 1 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Jogador 2 Entra no Jogo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 entrou no jogo\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/join",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Jogador 2 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Iniciar Jogo Com red 5 (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Jogo iniciado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    pm.expect(response.message).to.equal(\"Game started successfully\");",
+									"    ",
+									"    pm.expect(response.firstPlayer).to.equal(\"Jane Doe\");",
+									"    ",
+									"    pm.expect(response.firstCardDiscardPile).to.be.an(\"object\");",
+									"    pm.expect(response.firstCardDiscardPile.color).to.equal(\"red\");",
+									"    pm.expect(response.firstCardDiscardPile.value).to.equal(\"5\");",
+									"    pm.expect(response.firstCardDiscardPile.location).to.equal(\"discard\");",
+									"    ",
+									"    pm.expect(response.players).to.be.an(\"array\").that.has.lengthOf(2);",
+									"    ",
+									"    pm.expect(response.players[0].player).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.players[0].cardCount).to.equal(1);",
+									"    ",
+									"    pm.expect(response.players[1].player).to.equal(\"John Doe\");",
+									"    pm.expect(response.players[1].cardCount).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\",\n  \"isTest\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/start",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. Jogador 1 Jogar (red 7)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Carta red 7 jogada com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Card red 7 played successfully\");",
+									"    pm.expect(response.topDiscardCard).to.be.an(\"object\");",
+									"    pm.expect(response.topDiscardCard.color).to.equal(\"red\");",
+									"    pm.expect(response.topDiscardCard.value).to.equal(\"7\");",
+									"    pm.expect(response.topDiscardCard.location).to.equal(\"discard\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cardPlayed\": \"red 7\",\n    \"newColor\": \"blue, red, yellow, green\",\n    \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/cards/play/{{gameId}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"cards",
+								"play",
+								"{{gameId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. Jogador 1 Finalizar o Jogo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Jogo finalizado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    pm.expect(response.message).to.equal(\"Jane Doe has won the game!\");",
+									"    ",
+									"    pm.expect(response.winner).to.be.an(\"object\");",
+									"    pm.expect(response.winner.playerId).to.equal(1);",
+									"    pm.expect(response.winner.name).to.equal(\"Jane Doe\");",
+									"    ",
+									"    pm.expect(response.scores).to.be.an(\"object\");",
+									"    pm.expect(response.scores[\"Jane Doe\"]).to.equal(70);",
+									"    pm.expect(response.scores[\"John Doe\"]).to.equal(60);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"game_id\": {{gameId}},\n    \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/endgame",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"endgame"
+							]
+						},
+						"description": "Com front:  \nFront end sempre verificar o card count de cada jogador,  \nse algum jogador tiver count 0 ele enviar o pedido para backend terminar o jogo  \nCom Postman:  \nQualquer jogador (preferenciamente o que está sem cartas) pede pelo fim jogo."
+					},
+					"response": []
+				},
+				{
+					"name": "12. Reset Data Base",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Banco de dados resetado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Database reset successfully\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "admin-token",
+								"value": "Xn9LZIzHJWU3ZN1YUhx+ATVrVpUXDEDjng7/8WdmKGFax4OdSUQQI4YIwc3fCQkR",
+								"description": "Reset Database",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/resetDB/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"resetDB",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "**Objetivo**: Verificar se o jogo pode ser finalizado corretamente quando um jogador fica sem cartas, confirmando a vitória e as pontuações.\n\n**Detalhes**:\n\n- Criar dois jogadores e fazer login.\n    \n- Criar um jogo e marcar ambos como prontos.\n    \n- Iniciar o jogo com uma carta por jogador.\n    \n- Jogador 1 joga sua última carta.\n    \n- Finalizar o jogo e verificar a mensagem de vitória e as pontuações.\n    \n- Resetar o banco de dados.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"pm.test(\"Verificação do fluxo de Finalizar Jogo\", function () {",
+							"    const response = pm.response.json();",
+							"    if (pm.info.requestName === \"1. Criar Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"2. Criar Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"3. Login Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken1\")).to.exist;",
+							"    } else if (pm.info.requestName === \"4. Login Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken2\")).to.exist;",
+							"    } else if (pm.info.requestName === \"5. Criar Jogo (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game created successfully\");",
+							"        pm.expect(pm.environment.get(\"gameId\")).to.exist;",
+							"    } else if (pm.info.requestName === \"6. Jogador 1 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"7. Jogador 2 Entra no Jogo\") {",
+							"        pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+							"    } else if (pm.info.requestName === \"8. Jogador 2 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"9. Iniciar Jogo Com red 5 (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game started successfully\");",
+							"    } else if (pm.info.requestName === \"10. Jogador 1 Jogar (red 7)\") {",
+							"        pm.expect(response.message).to.equal(\"Card red 7 played successfully\");",
+							"    } else if (pm.info.requestName === \"11. Jogador 1 Finalizar o Jogo\") {",
+							"        pm.expect(response.message).to.equal(\"Jane Doe has won the game!\");",
+							"    } else if (pm.info.requestName === \"12. Reset Data Base\") {",
+							"        pm.expect(response.message).to.equal(\"Database reset successfully\");",
+							"    }",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Jogar Cartas",
+			"item": [
+				{
+					"name": "1. Criar Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 1 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player1Email\", \"jane.doe@example.com\");",
+									"    console.log(\"player1Email set to: jane.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"age\": 30,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Criar Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 2 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player2Email\", \"john.doe@example.com\");",
+									"    console.log(\"player2Email set to: john.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"age\": 25,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Login Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken1\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 1 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player1Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken2\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 2 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player2Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Criar Jogo (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"gameId\", response.game_id);",
+									"pm.test(\"Status code é 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Jogo criado com sucesso\", function () {",
+									"    pm.expect(response.message).to.equal(\"Game created successfully\");",
+									"    pm.expect(response.game_id).to.exist;",
+									"    console.log(\"gameId salvo como:\", pm.environment.get(\"gameId\"));",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Uno Teste 1 Carta\",\n  \"access_token\": \"{{playerToken1}}\",\n  \"maxPlayers\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Jogador 1 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 1 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Jogador 2 Entra no Jogo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 entrou no jogo\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/join",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Jogador 2 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Iniciar Jogo Com red 5 (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Jogo iniciado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    pm.expect(response.message).to.equal(\"Game started successfully\");",
+									"    ",
+									"    pm.expect(response.firstPlayer).to.equal(\"Jane Doe\");",
+									"    ",
+									"    pm.expect(response.firstCardDiscardPile).to.be.an(\"object\");",
+									"    pm.expect(response.firstCardDiscardPile.color).to.equal(\"red\");",
+									"    pm.expect(response.firstCardDiscardPile.value).to.equal(\"5\");",
+									"    pm.expect(response.firstCardDiscardPile.location).to.equal(\"discard\");",
+									"    ",
+									"    pm.expect(response.players).to.be.an(\"array\").that.has.lengthOf(2);",
+									"    ",
+									"    pm.expect(response.players[0].player).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.players[0].cardCount).to.equal(1);",
+									"    ",
+									"    pm.expect(response.players[1].player).to.equal(\"John Doe\");",
+									"    pm.expect(response.players[1].cardCount).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\",\n  \"isTest\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/start",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. Jogador 1 Jogar (red 7)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Carta red 7 jogada com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Card red 7 played successfully\");",
+									"    pm.expect(response.topDiscardCard).to.be.an(\"object\");",
+									"    pm.expect(response.topDiscardCard.color).to.equal(\"red\");",
+									"    pm.expect(response.topDiscardCard.value).to.equal(\"7\");",
+									"    pm.expect(response.topDiscardCard.location).to.equal(\"discard\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cardPlayed\": \"red 7\",\n    \"newColor\": \"blue, red, yellow, green\",\n    \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/cards/play/{{gameId}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"cards",
+								"play",
+								"{{gameId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. Jogador 2 Jogar (blue 7)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Carta blue 7 jogada com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Card blue 7 played successfully\");",
+									"    pm.expect(response.topDiscardCard).to.be.an(\"object\");",
+									"    pm.expect(response.topDiscardCard.color).to.equal(\"blue\");",
+									"    pm.expect(response.topDiscardCard.value).to.equal(\"7\");",
+									"    pm.expect(response.topDiscardCard.location).to.equal(\"discard\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cardPlayed\": \"blue 7\",\n    \"newColor\": \"blue, red, yellow, green\",\n    \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/cards/play/{{gameId}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"cards",
+								"play",
+								"{{gameId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "12. Get Game Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Status do jogo obtido com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.state).to.equal(\"in_progress\");",
+									"    pm.expect(response.currentDirection).to.equal(\"clockwise\");",
+									"    pm.expect(response.currentColor).to.equal(\"blue\");",
+									"    pm.expect(response.nextPlayer).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.nextPlayerIndex).to.equal(0);",
+									"    ",
+									"    pm.expect(response.playersInOrder).to.be.an(\"array\").that.has.lengthOf(2);",
+									"    pm.expect(response.playersInOrder[0].name).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.playersInOrder[0].position).to.equal(0);",
+									"    pm.expect(response.playersInOrder[1].name).to.equal(\"John Doe\");",
+									"    pm.expect(response.playersInOrder[1].position).to.equal(1);",
+									"    ",
+									"    pm.expect(response.topDiscardCard).to.be.an(\"object\");",
+									"    pm.expect(response.topDiscardCard.color).to.equal(\"blue\");",
+									"    pm.expect(response.topDiscardCard.value).to.equal(\"7\");",
+									"    pm.expect(response.topDiscardCard.location).to.equal(\"discard\");",
+									"    ",
+									"    pm.expect(response.playerCards).to.be.an(\"array\").that.has.lengthOf(2);",
+									"    pm.expect(response.playerCards[0].player).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.playerCards[0].cardCount).to.equal(0);",
+									"    pm.expect(response.playerCards[1].player).to.equal(\"John Doe\");",
+									"    pm.expect(response.playerCards[1].cardCount).to.equal(0);",
+									"    ",
+									"    pm.expect(response.deckCount).to.equal(108);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/{{gameId}}/status",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"{{gameId}}",
+								"status"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "13. Reset Data Base",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Banco de dados resetado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Database reset successfully\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "admin-token",
+								"value": "Xn9LZIzHJWU3ZN1YUhx+ATVrVpUXDEDjng7/8WdmKGFax4OdSUQQI4YIwc3fCQkR",
+								"description": "Reset Database",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/resetDB/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"resetDB",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "### Play Card\n\n**Objetivo**: Verificar a lógica de jogada de cartas durante uma partida de UNO, validando a compatibilidade de cores e valores em um ambiente de teste controlado.\n**Detalhes**:\n- Criar dois jogadores e realizar login.\n- Criar um jogo e marcar ambos os jogadores como prontos.\n- Iniciar o jogo com uma carta inicial específica na pilha de descarte e mãos pré-definidas para os jogadores.\n- Jogador 1 joga uma carta compatível com a carta no topo da pilha de descarte.\n- Jogador 2 joga uma carta compatível com a nova carta no topo.\n- Consultar o status do jogo para verificar as alterações.\n- Resetar o banco de dados após o teste.\n**Preparação do Código para Teste**:\nO código foi projetado para suportar um modo de teste (`isTest = true`), permitindo a criação de um ambiente controlado com um baralho e mãos dos jogadores pré-definidos. Isso elimina a aleatoriedade e facilita a validação de cenários específicos. Abaixo, detalho as principais funções envolvidas:\n#### Função `startGame`\n- **Descrição**: Inicia o jogo, configurando o baralho, distribuindo cartas e definindo a carta inicial da pilha de descarte.\n- **Parâmetros**:\n  - `game_id`: Identificador do jogo.\n  - `access_token`: Token de autenticação do criador do jogo.\n  - `cardsPerPlayer`: Número de cartas por jogador (usado fora do modo de teste).\n  - `isTest`: Booleano que ativa o modo de teste quando `true`.\n- **Comportamento no Modo de Teste**:\n  - Usa `dealTestCards` para distribuir cartas específicas aos jogadores.\n  - Usa `getTestInitialCard` para definir a carta inicial da pilha de descarte como \"red 5\".\n  - Exemplo de código relevante:\n    ```javascript\n    let dealtCards;\n    if (isTest) {\n        dealtCards = await deckService.dealTestCards(game_id, players);\n    } else {\n        dealtCards = await deckService.dealInitialCards(game_id, cardsPerPlayer);\n    }\n    let initialCard;\n    if (isTest) {\n        initialCard = await deckService.getTestInitialCard(game_id);\n    } else {\n        initialCard = await deckService.initializeGameWithCard(game_id);\n    }\n    ```\n- **Resultado**: O jogo começa com condições previsíveis, como \"red 5\" na pilha de descarte e cartas específicas nas mãos dos jogadores.\n#### Função `initializeTestDeck`\n- **Descrição**: Cria um baralho de teste com cartas pré-definidas para garantir consistência no comportamento do jogo.\n- **Implementação**:\n  ```javascript\n  const initializeTestDeck = async (gameId) => {\n      const testCards = [\n          { color: 'red', value: '7', gameId, location: 'deck' },\n          { color: 'blue', value: '5', gameId, location: 'deck' },\n          { color: 'green', value: 'skip', gameId, location: 'deck' },\n          { color: 'yellow', value: 'reverse', gameId, location: 'deck' },\n          { color: 'wild', value: 'wild', gameId, location: 'deck' },\n          { color: 'wild', value: 'wild_draw_four', gameId, location: 'deck' },\n      ];\n      return await CardModel.bulkCreateCards(testCards);\n  };\n\n ```\n\n- **Propósito**: Fornece um conjunto fixo de cartas no baralho, permitindo que o teste simule situações específicas sem depender de embaralhamento aleatório.\n    \n\n#### Função `dealTestCards`\n\n- **Descrição**: Distribui cartas pré-definidas aos jogadores no modo de teste.\n    \n- **Implementação**:\n    \n    ``` javascript\n          const dealTestCards = async (gameId, players) => {\n              const dealtCards = {};\n              const testCards = [\n                  { color: 'red', value: '7' },\n                  { color: 'blue', value: '7' },\n              ];\n              for (let i = 0; i < players.length; i++) {\n                  const player = players[i];\n                  const card = testCards[i];\n                  await CardModel.createCard({\n                      ...card,\n                      gameId,\n                      playerId: player.playerId,\n                      location: 'hand'\n                  });\n                  dealtCards[player.playerId] = [card];\n              }\n              const playerCard = await cardService.getPlayersCardsInGame(gameId, false);\n              return playerCard;\n          };\n    \n     ```\n    \n- **Comportamento**:\n    \n    - Jogador 1 recebe \"red 7\".\n        \n    - Jogador 2 recebe \"blue 7\".\n        \n- **Propósito**: Garante que os jogadores tenham cartas específicas para testar jogadas compatíveis (ex.: \"red 7\" sobre \"red 5\", seguido de \"blue 7\").\n    \n\n#### Função `getTestInitialCard`\n\n- **Descrição**: Define a carta inicial da pilha de descarte no modo de teste.\n    \n- **Implementação**:\n    \n    ``` javascript\n          const getTestInitialCard = async (gameId) => {\n              const testInitialCard = { color: 'red', value: '5', gameId, location: 'discard' };\n              return await CardModel.createCard(testInitialCard);\n          };\n    \n     ```\n    \n- **Propósito**: Estabelece \"red 5\" como a carta inicial, criando um ponto de partida fixo para validar as jogadas subsequentes.\n    \n\n**Explicação do Fluxo no Teste**:\n\n1. O jogo é iniciado com `startGame` e `isTest = true`.\n    \n2. `initializeTestDeck` cria um baralho de teste com cartas específicas.\n    \n3. `dealTestCards` distribui \"red 7\" ao Jogador 1 e \"blue 7\" ao Jogador 2.\n    \n4. `getTestInitialCard` coloca \"red 5\" na pilha de descarte.\n    \n5. Jogador 1 joga \"red 7\" (compatível por cor com \"red 5\").\n    \n6. Jogador 2 joga \"blue 7\" (compatível por valor com \"red 7\").\n    \n7. O status do jogo é verificado para confirmar as mudanças.\n    \n\nEssa abordagem garante que o teste \"Play Card\" seja reproduzível e focado na validação da lógica de jogada, eliminando variáveis aleatórias e facilitando a detecção de erros nas regras do jogo.  \n",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"pm.test(\"Verificação do fluxo de Play Card\", function () {",
+							"    const response = pm.response.json();",
+							"    if (pm.info.requestName === \"1. Criar Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"2. Criar Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"3. Login Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken1\")).to.exist;",
+							"    } else if (pm.info.requestName === \"4. Login Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken2\")).to.exist;",
+							"    } else if (pm.info.requestName === \"5. Criar Jogo (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game created successfully\");",
+							"        pm.expect(pm.environment.get(\"gameId\")).to.exist;",
+							"    } else if (pm.info.requestName === \"6. Jogador 1 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"7. Jogador 2 Entra no Jogo\") {",
+							"        pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+							"    } else if (pm.info.requestName === \"8. Jogador 2 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"9. Iniciar Jogo Com red 5 (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game started successfully\");",
+							"    } else if (pm.info.requestName === \"10. Jogador 1 Jogar (red 7)\") {",
+							"        pm.expect(response.message).to.equal(\"Card red 7 played successfully\");",
+							"    } else if (pm.info.requestName === \"11. Jogador 2 Jogar (blue 7)\") {",
+							"        pm.expect(response.message).to.equal(\"Card blue 7 played successfully\");",
+							"    } else if (pm.info.requestName === \"12. Get Game Status\") {",
+							"        pm.expect(response.state).to.equal(\"in_progress\");",
+							"    } else if (pm.info.requestName === \"13. Reset Data Base\") {",
+							"        pm.expect(response.message).to.equal(\"Database reset successfully\");",
+							"    }",
+							"});"
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Visualizar Scores",
+			"item": [
+				{
+					"name": "1. Criar Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 1 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player1Email\", \"jane.doe@example.com\");",
+									"    console.log(\"player1Email set to: jane.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Jane Doe\",\n  \"email\": \"jane.doe@example.com\",\n  \"age\": 30,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "2. Criar Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Jogador 2 criado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"User registered successfully\");",
+									"    pm.environment.set(\"player2Email\", \"john.doe@example.com\");",
+									"    console.log(\"player2Email set to: john.doe@example.com\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"age\": 25,\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Login Jogador 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken1\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 1 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player1Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Login Jogador 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"playerToken2\", response.accessToken);",
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Login Jogador 2 bem-sucedido\", function () {",
+									"    pm.expect(response.message).to.equal(\"Login successful\");",
+									"    pm.expect(response.accessToken).to.exist;",
+									"    pm.expect(response.player).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"{{player2Email}}\",\n  \"password\": \"anotherstrongpassword1\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/players/login",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"players",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Criar Jogo (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"const response = pm.response.json();",
+									"pm.environment.set(\"gameId\", response.game_id);",
+									"pm.test(\"Status code é 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"pm.test(\"Jogo criado com sucesso\", function () {",
+									"    pm.expect(response.message).to.equal(\"Game created successfully\");",
+									"    pm.expect(response.game_id).to.exist;",
+									"    console.log(\"gameId salvo como:\", pm.environment.get(\"gameId\"));",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Uno Teste 1 Carta\",\n  \"access_token\": \"{{playerToken1}}\",\n  \"maxPlayers\": 2\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Jogador 1 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 1 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"Jane Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "7. Jogador 2 Entra no Jogo",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 entrou no jogo\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/join",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Jogador 2 Pronto",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Jogador 2 marcado como pronto\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Player is now ready\");",
+									"    pm.expect(parseInt(response.game_id)).to.equal(pm.environment.get(\"gameId\") * 1);",
+									"    pm.expect(response.player_name).to.equal(\"John Doe\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/ready",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"ready"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Iniciar Jogo Com red 5 (Jogador 1)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Jogo iniciado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    pm.expect(response.message).to.equal(\"Game started successfully\");",
+									"    ",
+									"    pm.expect(response.firstPlayer).to.equal(\"Jane Doe\");",
+									"    ",
+									"    pm.expect(response.firstCardDiscardPile).to.be.an(\"object\");",
+									"    pm.expect(response.firstCardDiscardPile.color).to.equal(\"red\");",
+									"    pm.expect(response.firstCardDiscardPile.value).to.equal(\"5\");",
+									"    pm.expect(response.firstCardDiscardPile.location).to.equal(\"discard\");",
+									"    ",
+									"    pm.expect(response.players).to.be.an(\"array\").that.has.lengthOf(2);",
+									"    ",
+									"    pm.expect(response.players[0].player).to.equal(\"Jane Doe\");",
+									"    pm.expect(response.players[0].cardCount).to.equal(1);",
+									"    ",
+									"    pm.expect(response.players[1].player).to.equal(\"John Doe\");",
+									"    pm.expect(response.players[1].cardCount).to.equal(1);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"game_id\": \"{{gameId}}\",\n  \"access_token\": \"{{playerToken1}}\",\n  \"isTest\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/games/start",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"games",
+								"start"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. Jogador 1 Jogar (red 7)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Carta red 7 jogada com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Card red 7 played successfully\");",
+									"    pm.expect(response.topDiscardCard).to.be.an(\"object\");",
+									"    pm.expect(response.topDiscardCard.color).to.equal(\"red\");",
+									"    pm.expect(response.topDiscardCard.value).to.equal(\"7\");",
+									"    pm.expect(response.topDiscardCard.location).to.equal(\"discard\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cardPlayed\": \"red 7\",\n    \"newColor\": \"blue, red, yellow, green\",\n    \"access_token\": \"{{playerToken1}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/cards/play/{{gameId}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"cards",
+								"play",
+								"{{gameId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. Jogador 2 Jogar (blue 7)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Carta blue 7 jogada com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Card blue 7 played successfully\");",
+									"    pm.expect(response.topDiscardCard).to.be.an(\"object\");",
+									"    pm.expect(response.topDiscardCard.color).to.equal(\"blue\");",
+									"    pm.expect(response.topDiscardCard.value).to.equal(\"7\");",
+									"    pm.expect(response.topDiscardCard.location).to.equal(\"discard\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cardPlayed\": \"blue 7\",\n    \"newColor\": \"blue, red, yellow, green\",\n    \"access_token\": \"{{playerToken2}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/cards/play/{{gameId}}",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"cards",
+								"play",
+								"{{gameId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "12. Visualizar Scores dos Jogadores",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Pontuações do jogo obtidas com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    ",
+									"    pm.expect(response).to.be.an(\"object\");",
+									"    pm.expect(response[\"Jane Doe\"]).to.equal(70);",
+									"    pm.expect(response[\"John Doe\"]).to.equal(70);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"game_id\": \"{{gameId}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/scores/gamescores",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"scores",
+								"gamescores"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "13. Reset Data Base",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code é 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Banco de dados resetado com sucesso\", function () {",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.message).to.equal(\"Database reset successfully\");",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "admin-token",
+								"value": "Xn9LZIzHJWU3ZN1YUhx+ATVrVpUXDEDjng7/8WdmKGFax4OdSUQQI4YIwc3fCQkR",
+								"description": "Reset Database",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://{{host}}:{{port}}/api/resetDB/",
+							"protocol": "http",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"api",
+								"resetDB",
+								""
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "**Objetivo**: Validar a visualização das pontuações dos jogadores após o jogo, garantindo que os scores sejam calculados corretamente com base nas jogadas realizadas e no número de cartas restantes.\n\n**Detalhes do Teste**:\n\n- Criar dois jogadores e realizar login.\n    \n- Criar um jogo e marcar ambos os jogadores como prontos.\n    \n- Iniciar o jogo e simular jogadas de cartas (descartando ou comprando cartas).\n    \n- Visualizar as pontuações dos jogadores após cada jogada.\n    \n- Confirmar que as pontuações refletem as regras de cálculo.\n    \n- Resetar o banco de dados ao final.\n    \n\n**Cálculo de Pontuações**:  \nO sistema utiliza a constante `POINTS_PER_CARD = 10` para determinar a pontuação com base no número de cartas que um jogador possui. A lógica principal é: **cada carta a menos que o máximo de 7 cartas concede 10 pontos ao jogador**. O score é atualizado dinamicamente durante o jogo, especialmente quando uma jogada ocorre (descartar ou comprar uma carta) e ao final do jogo.\n\n#### Como o Score é Calculado Quando uma Jogada Ocorre\n\n1. **Inicialização da Pontuação** (`initializeScore`):\n    \n    - No início do jogo, a pontuação de cada jogador é calculada com base nas cartas iniciais.\n        \n    - Fórmula: `score = Math.max(0, POINTS_PER_CARD \\\\* (7 - cardCount))`.\n        \n    - Exemplo: Se o jogador começa com 7 cartas, `score = 10 \\\\* (7 - 7) = 0`.\n        \n2. **Atualização ao Jogar uma Carta** (`updateScoreOnCardPlay`):\n    \n    - **Descrição**: Quando um jogador descarta uma carta, o número de cartas (`cardCount`) diminui, e a pontuação é recalculada.\n        \n    - **Passos**:\n        \n        - O sistema obtém a quantidade atual de cartas do jogador com `CardModel.getCardsByPlayerAndGame`.\n            \n        - Calcula o novo score: `score = Math.max(0, POINTS_PER_CARD \\\\* (7 - cardCount))`.\n            \n        - Atualiza o score no banco de dados com `ScoreHistoryModel.updateScore`.\n            \n    - **Exemplo**:\n        \n        - Jogador tem 7 cartas, score = 0.\n            \n        - Descarta 1 carta, ficando com 6: `score = 10 \\\\* (7 - 6) = 10`.\n            \n        - Descarta outra, ficando com 5: `score = 10 \\\\* (7 - 5) = 20`.\n            \n3. **Atualização ao Comprar uma Carta** (`updateScoreOnCardDraw`):\n    \n    - **Descrição**: Quando um jogador compra uma carta, o número de cartas aumenta, e a pontuação é ajustada.\n        \n    - **Passos**:\n        \n        - Obtém o novo total de cartas.\n            \n        - Recalcula: `score = Math.max(0, POINTS_PER_CARD \\\\* (7 - cardCount))`.\n            \n    - **Exemplo**:\n        \n        - Jogador tem 6 cartas, score = 10.\n            \n        - Compra 1 carta, ficando com 7: `score = 10 \\\\* (7 - 7) = 0`.\n            \n4. **Pontuação Final** (`updateScoresOnGameEnd`):\n    \n    - No fim do jogo, a pontuação final de cada jogador é calculada com base nas cartas restantes.\n        \n    - Fórmula: `finalScore = Math.max(0, POINTS_PER_CARD \\\\* (7 - cardCount))`.\n        \n    - Exemplo: Jogador termina com 0 cartas, `finalScore = 10 \\\\* (7 - 0) = 70`.\n        \n\n**Exemplo Completo**:\n\n- Jogador começa com 7 cartas: `score = 0`.\n    \n- Descarta 1 carta (6 restantes): `score = 10`.\n    \n- Compra 1 carta (7 novamente): `score = 0`.\n    \n- Descarta 3 cartas (4 restantes): `score = 30`.\n    \n- Termina o jogo com 4 cartas: `finalScore = 30`.\n    \n\n**Integração com o Teste**:\n\n- Durante o teste \"Visualizar Scores\", simule jogadas (descartar e comprar cartas) e verifique as pontuações retornadas pela função `getFormattedScores`.\n    \n- Exemplo de validação:\n    \n    - Jogador 1 descarta 2 cartas (5 restantes), espera-se `score = 20`.\n        \n    - Jogador 2 descarta 1 carta (6 restantes), espera-se `score = 10`.\n        \n- O teste confirma que o sistema reflete corretamente as mudanças no número de cartas após cada jogada.",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"packages": {},
+						"exec": [
+							"pm.test(\"Verificação do fluxo de Play Card\", function () {",
+							"    const response = pm.response.json();",
+							"    if (pm.info.requestName === \"1. Criar Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"2. Criar Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"User registered successfully\");",
+							"    } else if (pm.info.requestName === \"3. Login Jogador 1\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken1\")).to.exist;",
+							"    } else if (pm.info.requestName === \"4. Login Jogador 2\") {",
+							"        pm.expect(response.message).to.equal(\"Login successful\");",
+							"        pm.expect(pm.environment.get(\"playerToken2\")).to.exist;",
+							"    } else if (pm.info.requestName === \"5. Criar Jogo (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game created successfully\");",
+							"        pm.expect(pm.environment.get(\"gameId\")).to.exist;",
+							"    } else if (pm.info.requestName === \"6. Jogador 1 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"7. Jogador 2 Entra no Jogo\") {",
+							"        pm.expect(response.message).to.equal(\"Player joined the game successfully\");",
+							"    } else if (pm.info.requestName === \"8. Jogador 2 Pronto\") {",
+							"        pm.expect(response.message).to.equal(\"Player is now ready\");",
+							"    } else if (pm.info.requestName === \"9. Iniciar Jogo Com red 5 (Jogador 1)\") {",
+							"        pm.expect(response.message).to.equal(\"Game started successfully\");",
+							"    } else if (pm.info.requestName === \"10. Jogador 1 Jogar (red 7)\") {",
+							"        pm.expect(response.message).to.equal(\"Card red 7 played successfully\");",
+							"    } else if (pm.info.requestName === \"11. Jogador 2 Jogar (blue 7)\") {",
+							"        pm.expect(response.message).to.equal(\"Card blue 7 played successfully\");",
+							"    } else if (pm.info.requestName === \"15. Obter Pontuações do Jogo\") {",
+							"        pm.expect(response[\"Jane Doe\"]).to.equal(70);",
+							"        pm.expect(response[\"John Doe\"]).to.equal(60);",
+							"    } else if (pm.info.requestName === \"13. Reset Data Base\") {",
+							"        pm.expect(response.message).to.equal(\"Database reset successfully\");",
+							"    }",
+							"});"
+						]
+					}
+				}
+			]
+		}
+	]
+}
