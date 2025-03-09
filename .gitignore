@@ -1,5 +1,4 @@
 node_modules
-.env
 
 # Tests
 coverage/
@@ -7,9 +6,6 @@ coverage/
 # Logs
 logs/
 !logs/.gitkeep
-
-# Client config
-client/js/config.js
 
 #Ide
 .vscode
