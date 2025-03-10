@@ -18,7 +18,11 @@
             if (currentGameId) {
                 updateGameInfo(currentGameId, currentGameTitle);
             }
-        });
+            document.getElementById('createGameBtn').addEventListener('click', createGame);
+            document.getElementById('joinGameBtn').addEventListener('click', joinGame);
+            document.getElementById('playerReadyBtn').addEventListener('click', playerReady);
+            document.getElementById('startGameBtn').addEventListener('click', startGame);
+            });
 
         window.addEventListener('beforeunload', () => {
             localStorage.removeItem('currentGameId');

@@ -60,7 +60,7 @@
                 <input type="text" id="gameTitle" class="input-field" placeholder="Enter game title...">
                 <input type="number" id="maxPlayers" class="input-field" 
                        placeholder="Max players" min="2" max="8" value="4">
-                <button class="btn btn-primary" onclick="createGame()">
+                <button class="btn btn-primary" id="createGameBtn">
                     <i class="material-icons">create</i>
                     Create Room
                 </button>
@@ -74,7 +74,7 @@
             </h2>
             <div class="input-group">
                 <input type="text" id="gameId" class="input-field" placeholder="Enter game ID...">
-                <button class="btn btn-secondary" onclick="joinGame()">
+                <button class="btn btn-secondary" id="joinGameBtn">
                     <i class="material-icons">login</i>
                     Join Room
                 </button>
@@ -82,11 +82,11 @@
         </div>
 
         <div class="action-buttons">
-            <button class="btn btn-primary" onclick="playerReady()">
+            <button class="btn btn-primary" id="playerReadyBtn">
                 <i class="material-icons">done_all</i>
                 Ready Up
             </button>
-            <button class="btn btn-secondary" onclick="startGame()">
+            <button class="btn btn-secondary" id="startGameBtn">
                 <i class="material-icons">play_arrow</i>
                 Start Game
             </button>
