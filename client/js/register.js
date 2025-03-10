@@ -1,3 +1,5 @@
+import config from './config.js';
+
 async function register() {
     const name = document.getElementById('name').value;
     const email = document.getElementById('email').value;
@@ -30,7 +32,7 @@ async function register() {
         if (response.ok) {
             messageElement.textContent = 'Registration successful! Redirecting to login...';
             messageElement.style.color = '#55ff55';
-            setTimeout(() => window.location.href = 'index.html', 1500);
+            setTimeout(() => window.location.href = '/index.html', 1500); // Ajustado para caminho absoluto
         } else {
             messageElement.textContent = `Error: ${data.message || 'Registration failed'}`;
             messageElement.style.color = '#ff5555';
@@ -40,3 +42,10 @@ async function register() {
         messageElement.style.color = '#ff5555';
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const registerButton = document.querySelector('button');
+    if (registerButton) {
+        registerButton.addEventListener('click', register);
+    }
+});
