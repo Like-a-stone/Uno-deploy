@@ -1,4 +1,4 @@
-        const socket = io(config.API_URL);
+        const socket = io('https://uno-deploy-l7eq.onrender.com');
         const playersList = document.getElementById('playersList');
         let accessToken;
         let gameId;

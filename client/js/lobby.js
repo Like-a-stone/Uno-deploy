@@ -1,4 +1,4 @@
-        const socket = io(config.API_URL);
+        const socket = io('https://uno-deploy-l7eq.onrender.com');
         let currentGameId = '';
         let currentGameTitle = '';
         let playerName = '';
@@ -6,7 +6,7 @@
         const playersList = document.getElementById('playersList');
 
         if (!accessToken) {
-            window.location.href = 'index.html';
+            window.location.href = '/index.html';
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -131,7 +131,7 @@
 
         async function getPlayerName() {
             try {
-                const response = await fetch(`${config.API_URL}/api/players/profile/`, {
+                const response = await fetch(`https://uno-deploy-l7eq.onrender.com/api/players/profile/`, {
                     headers: { 'Authorization': `Bearer ${accessToken}` }
                 });
                 
