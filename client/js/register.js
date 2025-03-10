@@ -27,12 +27,16 @@ async function register() {
             })
         });
 
-        const data = await response.json();
+        console.log('Status da resposta:', response.status);
+        const text = await response.text(); // Pega o corpo como texto bruto
+        console.log('Corpo da resposta:', text);
+
+        const data = JSON.parse(text);
         
         if (response.ok) {
             messageElement.textContent = 'Registration successful! Redirecting to login...';
             messageElement.style.color = '#55ff55';
-            setTimeout(() => window.location.href = '/index.html', 1500); // Ajustado para caminho absoluto
+            setTimeout(() => window.location.href = '/index.html', 1500);
         } else {
             messageElement.textContent = `Error: ${data.message || 'Registration failed'}`;
             messageElement.style.color = '#ff5555';
@@ -40,6 +44,7 @@ async function register() {
     } catch (error) {
         messageElement.textContent = `Error: ${error.message}`;
         messageElement.style.color = '#ff5555';
+        console.error('Erro no fetch:', error);
     }
 }
 
