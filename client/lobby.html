@@ -4,15 +4,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNO Game - Play</title>
-    <link rel="stylesheet" href="/css/game.css" type="text/css">
+    <link rel="stylesheet" href="/css/lobby.css" type="text/css">
     <link rel="icon" href="/assets/uno icon.png" type="image/png">
 </head>
 <body>
-    <!-- Conteúdo do jogo -->
+    <div class="header">
+        <div class="logo">
+            <img src="assets/uno icon.png" alt="UNO Logo" />
+        </div>
+        <div id="player-name" class="player-tag">
+            <div class="player-info">
+                <div class="player-name-section">
+                    <span class="info-label">Player:</span>
+                    <span id="player-name-display" class="info-value">Guest123</span>
+                </div>
+                <div class="player-score-section">
+                    <span class="info-label">🎯 Score:</span>
+                    <span id="player-score-display" class="info-value">0</span>
+                </div>
+            </div>
+            <div class="status-indicator"></div>
+        </div>
+    </div>
+
+    <div class="game-status-container">
+        <div id="playerList">
+            <h3>
+                <i class="material-icons">people</i>
+                Players in the Game
+            </h3>
+            <ul id="playersList"></ul>
+        </div>
+    
+        <div id="game-info" style="display: none;">
+            <h2>
+                <i class="material-icons">sports_esports</i>
+                Current Game: <span id="game-title"></span>
+            </h2>
+            <p>
+                <i class="material-icons">fingerprint</i>
+                Game ID: <span id="game-id"></span>
+            </p>
+        </div>
+    </div>
+
+    <div class="game-panel">
+        <div class="game-section">
+            <h2 class="section-title">
+                <i class="material-icons">add_box</i>
+                Create Game
+            </h2>
+            <div class="input-group">
+                <input type="text" id="gameTitle" class="input-field" placeholder="Enter game title...">
+                <input type="number" id="maxPlayers" class="input-field" 
+                       placeholder="Max players" min="2" max="8" value="4">
+                <button class="btn btn-primary" onclick="createGame()">
+                    <i class="material-icons">create</i>
+                    Create Room
+                </button>
+            </div>
+        </div>
+
+        <div class="game-section">
+            <h2 class="section-title">
+                <i class="material-icons">meeting_room</i>
+                Join Game
+            </h2>
+            <div class="input-group">
+                <input type="text" id="gameId" class="input-field" placeholder="Enter game ID...">
+                <button class="btn btn-secondary" onclick="joinGame()">
+                    <i class="material-icons">login</i>
+                    Join Room
+                </button>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="playerReady()">
+                <i class="material-icons">done_all</i>
+                Ready Up
+            </button>
+            <button class="btn btn-secondary" onclick="startGame()">
+                <i class="material-icons">play_arrow</i>
+                Start Game
+            </button>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-messages" id="chat-messages"></div>
+        <form id="chat-form" class="input-group">
+            <input type="text" id="chat-input" class="input-field" placeholder="Type your message...">
+            <button type="submit" class="btn btn-primary">
+                <i class="material-icons">send</i>
+                Send
+            </button>
+        </form>
+    </div>
+     
     <script>
-        window.API_URL = '{{ .Env.API_URL }}';
+        window.API_URL = 'https://uno-deploy-l7eq.onrender.com';
     </script>
     <script src="/js/config.js" type="module"></script>
-    <script src="/js/game.js" type="module"></script>
+    <script src="/js/lobby.js" type="module"></script>
 </body>
 </html>
