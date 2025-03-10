@@ -3,21 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNO Game - Register</title>
-    <link rel="stylesheet" href="css/login.css">
+    <title>UNO Game - Lobby</title>
+    <link rel="stylesheet" href="/css/lobby.css" type="text/css">
+    <link rel="icon" href="/assets/uno icon.png" type="image/png">
 </head>
 <body>
-    <h1>UNO Game - <span>Register</span></h1>
-    <div class="login-container">
-        <input type="text" id="name" placeholder="Name">
-        <input type="email" id="email" placeholder="Email">
-        <input type="number" id="age" placeholder="Age" min="1">
-        <input type="password" id="password" placeholder="Password">
-        <button onclick="register()">Create Account</button>
-        <div id="message"></div>
-        <p style="margin-top: 15px;">Already have an account? <a href="index.html" style="color: #f44336;">Login here</a></p>
-    </div>
-    <script src="js/config.js"></script>
-    <script src="js/register.js"></script>
+    <!-- Conteúdo do lobby -->
+    <script>
+        window.API_URL = '{{ .Env.API_URL }}';
+    </script>
+    <script src="/js/config.js" type="module"></script>
+    <script src="/js/lobby.js" type="module"></script>
 </body>
 </html>
