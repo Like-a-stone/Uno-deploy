@@ -14,6 +14,7 @@ async function login() {
             body: JSON.stringify({ email, password }),
             credentials: 'include'
         });
+        console.log('Status da resposta:', response);
 
         if (response.ok) {
             const data = await response.json();
