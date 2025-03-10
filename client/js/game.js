@@ -9,11 +9,12 @@
         let hasActiveChallenge = false;
         let playerScores = {}; 
         let lastGameState; 
+        let previousCardCount = 0;
 
         function renderHand(cards) {
             const handElement = document.getElementById('hand');
             handElement.innerHTML = cards.map((card, index) => {
-                const cardUrl = `/client/assets/cards/${card.color}_${card.value}.jpg`;
+                const cardUrl = `../assets/cards/${card.color}_${card.value}.jpg`;
                 const playableClass = isCurrentPlayerTurn ? 'playable' : '';
                 
                 return `
@@ -42,7 +43,7 @@
         function updateCurrentCard(card) {
             const currentCardElement = document.getElementById('current-card');
             if (card) {
-                const cardUrl = `/client/assets/cards/${card.color}_${card.value}.jpg`;
+                const cardUrl = `../assets/cards/${card.color}_${card.value}.jpg`;
                 currentCardElement.style.backgroundImage = `url('${cardUrl}')`;
             } else {
                 console.error('Invalid card data received');
@@ -186,7 +187,7 @@
             
             document.getElementById('uno-btn').addEventListener('click', callUno);
             document.getElementById('challenge-btn').addEventListener('click', challengeUno);
-            document.getElementById('update-game-state-btn').addEventListener('click', requestGameStateUpdate);
+            // document.getElementById('update-game-state-btn').addEventListener('click', requestGameStateUpdate);
             document.querySelectorAll('#colorModal .btn').forEach(button => {
                 button.addEventListener('click', function() {
                     const color = this.getAttribute('data-color');
