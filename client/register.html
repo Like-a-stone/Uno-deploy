@@ -18,9 +18,8 @@
         <div id="message"></div>
         <p style="margin-top: 15px;">Already have an account? <a href="/index.html" style="color: #f44336;">Login here</a></p>
     </div>
-    <!-- Injeta a variável API_URL para o config.js -->
     <script>
-        window.API_URL = '{{ .Env.API_URL }}'; // Render substitui por https://uno-deploy.onrender.com
+        window.API_URL = '{{ .Env.API_URL }}'; 
     </script>
     <script src="/js/config.js" type="module"></script>
     <script src="/js/register.js" type="module"></script>
