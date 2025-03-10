@@ -1,3 +1,5 @@
+import config from './config.js';
+
 async function login() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -20,7 +22,8 @@ async function login() {
             messageElement.textContent = 'Login successful! Redirecting...';
             messageElement.style.color = '#55ff55'; 
             setTimeout(() => {
-                window.location.href = `lobby.html?token=${encodeURIComponent(data.accessToken)}`;}, 500);
+                window.location.href = `/lobby.html?token=${encodeURIComponent(data.accessToken)}`;
+            }, 500);
         } else {
             const error = await response.json();
             messageElement.textContent = `Error: ${error.message}`;
@@ -31,3 +34,10 @@ async function login() {
         messageElement.style.color = '#ff5555';
     }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    const loginButton = document.querySelector('button');
+    if (loginButton) {
+        loginButton.addEventListener('click', login);
+    }
+});

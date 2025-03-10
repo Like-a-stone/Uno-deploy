@@ -5,19 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UNO Game - Login</title>
     <link rel="stylesheet" href="/css/login.css" type="text/css">
-    <!-- Adiciona o favicon para evitar o erro 404 -->
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/assets/uno icon.png" type="image/png"> <!-- Corrigido para usar o ícone existente -->
 </head>
 <body>
     <h1>UNO Game - Login</h1>
     <div class="login-container">
         <input type="email" id="email" placeholder="Email">
         <input type="password" id="password" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <p style="margin-top: 15px;">Don't have an account? <a href="register.html" style="color: #f44336;">Create one</a></p>
+        <button>Login</button>
+        <p style="margin-top: 15px;">Don't have an account? <a href="/register.html" style="color: #f44336;">Create one</a></p>
         <div id="message"></div>
     </div>
-    <!-- Injeta a variável API_URL antes de carregar o config.js -->
     <script>
         window.API_URL = '{{ .Env.API_URL }}'; // Render substitui pelo valor de API_URL
     </script>
