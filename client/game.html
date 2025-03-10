@@ -57,7 +57,7 @@
                     <h3 class="mb-3"><span class="section-label">Draw Pile</span></h3>
                     <div id="draw-pile" class="uno-card mx-auto" 
                          style="background-image: url('/assets/cards/card_back.png');"
-                         onclick="drawCard()"></div>
+                    ></div>
                     <p id="deck-count" class="mt-2">Cards left: <span id="deck-count-value">40</span></p>
                 </div>
             </div>
@@ -70,9 +70,9 @@
         
         <!-- Controles -->
         <div class="text-center mt-3">
-            <button id="uno-btn" class="btn btn-danger btn-lg me-2" onclick="callUno()">Call UNO!</button>
-            <button id="challenge-btn" class="btn btn-warning btn-lg me-2" onclick="challengeUno()">Challenge UNO</button>
-            <button id="update-game-state-btn" class="btn btn-primary btn-lg" onclick="requestGameStateUpdate()">Refresh</button>
+            <button id="uno-btn" class="btn btn-danger btn-lg me-2" >Call UNO!</button>
+            <button id="challenge-btn" class="btn btn-warning btn-lg me-2">Challenge UNO</button>
+            <button id="update-game-state-btn" class="btn btn-primary btn-lg">Refresh</button>
         </div>
 
         <!-- Chat -->
@@ -101,29 +101,29 @@
                 <div class="modal-body text-center">
                     <div class="row g-3">
                         <div class="col-6">
-                            <button class="btn btn-danger w-100 py-3" 
-                                    onclick="selectColor('red')"
+                            <button class="btn btn-danger w-100 py-3"
+                                    data-color="red"
                                     style="background-color: #dc3545; border-color: #dc3545;">
                                 Red
                             </button>
                         </div>
                         <div class="col-6">
                             <button class="btn btn-primary w-100 py-3" 
-                                    onclick="selectColor('blue')"
+                                    data-color="blue"
                                     style="background-color: #0d6efd; border-color: #0d6efd;">
                                 Blue
                             </button>
                         </div>
                         <div class="col-6">
                             <button class="btn btn-success w-100 py-3" 
-                                    onclick="selectColor('green')"
+                                    data-color="green"
                                     style="background-color: #198754; border-color: #198754;">
                                 Green
                             </button>
                         </div>
                         <div class="col-6">
-                            <button class="btn btn-warning w-100 py-3" 
-                                    onclick="selectColor('yellow')"
+                            <button class="btn btn-warning w-100 py-3"
+                                    data-color="yellow" 
                                     style="background-color: #ffc107; border-color: #ffc107;">
                                 Yellow
                             </button>

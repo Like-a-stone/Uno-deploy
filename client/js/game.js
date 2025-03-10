@@ -19,12 +19,22 @@
                 return `
                     <div class="col-auto">
                         <div class="uno-card ${playableClass}" 
-                            style="background-image: url('${cardUrl}');"
-                            onclick="${isCurrentPlayerTurn ? `playCard(${index})` : ''}">
+                            data-index="${index}"
+                            style="background-image: url('${cardUrl}');">
                         </div>
                     </div>
                 `;
             }).join('');
+        
+            document.querySelectorAll('#hand .uno-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    if (isCurrentPlayerTurn) {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        playCard(index);
+                    }
+                });
+            });
+            
             updateUnoButton(); 
             adjustChatPosition();
         }
@@ -83,9 +93,6 @@
         function updateDrawPile() {
             const drawPile = document.getElementById('draw-pile');
             drawPile.classList.toggle('playable', isCurrentPlayerTurn);
-            
-            // Atualiza o evento de clique condicionalmente
-            drawPile.onclick = isCurrentPlayerTurn ? drawCard : null;
         }
 
         function playCard(index) {
@@ -172,6 +179,20 @@
 
             socket.emit('join_socket', { game_id: gameId });
             socket.emit('request_game_state', { game_id: gameId });
+
+            document.getElementById('draw-pile').addEventListener('click', function() {
+                if (isCurrentPlayerTurn) drawCard();
+            });
+            
+            document.getElementById('uno-btn').addEventListener('click', callUno);
+            document.getElementById('challenge-btn').addEventListener('click', challengeUno);
+            document.getElementById('update-game-state-btn').addEventListener('click', requestGameStateUpdate);
+            document.querySelectorAll('#colorModal .btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const color = this.getAttribute('data-color');
+                    selectColor(color);
+                });
+            });
         }
 
         function drawCard() {
